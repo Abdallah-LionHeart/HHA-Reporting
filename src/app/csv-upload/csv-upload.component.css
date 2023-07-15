@@ -1,0 +1,54 @@
+.btn-import {
+  justify-content: center;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+span{
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: unset;
+}
+
+.btn:hover {
+  background-color: lightblue;
+  color: black;
+}
+
+table {
+  margin-top: 20px;
+}
+
+table td,
+table th {
+  border: 1px solid rgb(0, 0, 0);
+  padding: 10px;
+  text-align: center;
+}
+
+.row-1 {
+  background-color: black;
+  color: white;
+}
+
+.row-2 {
+  font-weight: bold;
+  background-color: blanchedalmond;
+}
+
+.row-3 {
+  background-color: rgb(60, 0, 0);
+  color: white;
+}
+
+.row-1,
+.row-3 {
+  font-weight: bold;
+}
+
+/* calculator */
+
+.cal-color {
+  color: aliceblue;
+}

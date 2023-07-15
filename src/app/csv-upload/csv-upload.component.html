@@ -1,0 +1,96 @@
+<nav class="navbar navbar-dark bg-dark navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">Billing Assistant</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            </ul>
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                    [(ngModel)]="searchQuery" (ngModelChange)="changed()" onkeydown="return (event.keyCode!=13);"
+                    name="something" [ngModelOptions]="{standalone: true}" [disabled]="allPatients.length == 0">
+                <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success ms-2 d-flex">IMPORT</label>
+
+                <button class="btn btn-outline-success ms-2" (click)="downloadFile()">EXPORT</button>
+
+                <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <form class="row d-lg-none d-xl-none" style="margin-top: 20px; margin-bottom: 20px;">
+        <div class="col-md-6" style="margin-bottom: 20px">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                [(ngModel)]="searchQuery" (ngModelChange)="changed()" onkeydown="return (event.keyCode!=13);"
+                name="something" [ngModelOptions]="{standalone: true}" [disabled]="allPatients.length == 0">
+        </div>
+
+        <div class="col-md-6 ">
+            <div class="d-flex justify-content-center">
+                <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success">IMPORT</label>
+                <button class="btn btn-outline-success ms-2" (click)="downloadFile()">EXPORT</button>
+                <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
+            </div>
+        </div>
+    </form>
+
+    <input id="VisitLog" type="file" style="visibility: hidden;" (change)="onFileSelected($event)" accept=".csv">
+
+    <div class="table-responsive">
+
+        <table class="table table-striped-columns" id="table" *ngFor="let patient of patients; let index = index;">
+            <tr class="row-1">
+                <th colspan="3">Patient ID</th>
+                <th colspan="3">Patient Name</th>
+                <th colspan="3">Total Billable Hours</th>
+                <th>#</th>
+            </tr>
+            <tr class="row-2">
+                <td colspan="3">{{patient.id}}</td>
+                <td colspan="3">{{patient.patientName}}</td>
+                <td colspan="3">{{patient.billableHours}}/{{patient.scheduledHours}}</td>
+                <td>{{index + 1}}</td>
+            </tr>
+            <tr class="row-3">
+                <th>#</th>
+                <th>Care giver</th>
+                <th>Assignment</th>
+                <th>Contract</th>
+                <th>Coordinator</th>
+                <th>Date</th>
+                <th>Visit Scheduled</th>
+                <th>Actual Visit</th>
+                <th>Remarks</th>
+                <th>Total Hrs</th>
+            </tr>
+            <tr *ngFor="let visit of patient.visits; let i = index" class="row-4"
+                [ngStyle]="{'background-color': visit.validation.color}"
+                [ngClass]="{'text-white': visit.validation.color == 'red' || visit.validation.color == 'green'}">
+                <td>{{i + 1}}</td>
+                <td>{{visit.caregiverName}}</td>
+                <td>{{visit.assignmentId}}</td>
+                <td>{{visit.contractName}}</td>
+                <td>{{visit.coordinatorName}}</td>
+                <td>{{visit.date | date:'d MMMM yyyy'}}</td>
+                <td>{{visit.visitScheduledStart | date:'H:mm'}} - {{visit.visitScheduledEnd | date:'H:mm'}}</td>
+                <td>{{visit.actualVisitStart | date:'H:mm'}} - {{visit.actualVisitEnd | date:'H:mm'}}</td>
+                <td>{{visit.notes}}</td>
+                <td>
+                    <span *ngIf="!visit.validation.missedOut">
+                        {{visit.actualVisitHourDiffrence > visit.visitScheduledHourDiffrence ?
+                        visit.visitScheduledHourDiffrence : visit.actualVisitHourDiffrence}}
+                    </span>
+                    <span *ngIf="visit.validation.missedOut">
+                        0
+                    </span>
+                    /{{visit.visitScheduledHourDiffrence}}
+                </td>
+
+            </tr>
+        </table>
+    </div>
+
+
+</div>
