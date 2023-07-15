@@ -1,6 +1,6 @@
 {
-  "name": "test-electron",
-  "version": "0.0.0",
+  "name": "billing-assistant",
+  "version": "1.0.0",
   "main": "main.js",
   "scripts": {
     "ng": "ng",
