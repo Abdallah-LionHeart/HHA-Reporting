@@ -1,0 +1,2 @@
+package files for windows
+npx electron-packager . --platform=win32
