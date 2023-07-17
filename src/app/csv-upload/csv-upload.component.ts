@@ -13,7 +13,7 @@ export class CsvUploadComponent implements OnInit {
 
   searchQuery = '';
   searchQueryChanged = new Subject<string>();
-  Math = Math;
+
   constructor() {
     this.searchQueryChanged.pipe(debounceTime(500)).subscribe(() => {
       if (this.searchQuery) {
@@ -131,12 +131,9 @@ export class CsvUploadComponent implements OnInit {
       let visitScheduledStart = this.getStartTime(new Date(date), x.visitScheduled);
       let visitScheduledEnd = this.getEndTime(new Date(date), x.visitScheduled, visitScheduledStart);
       let visitScheduledHourDiffrence = this.getTimeDiffrenceInHours(visitScheduledStart, visitScheduledEnd);
-
       let actualVisitStart = this.getStartTime(new Date(date), x.actualVisit);
       let actualVisitEnd = this.getEndTime(new Date(date), x.actualVisit, actualVisitStart);
-      // let actualVisitHourDiffrence = this.getTimeDiffrenceInHours(actualVisitStart, actualVisitEnd);
       let actualVisitHourDiffrence = this.getActualVisitTimeDiffrenceInHours(actualVisitStart, actualVisitEnd, new Date(visitScheduledStart as Date), new Date(visitScheduledEnd as Date));
-
 
       let visit: Visit = {
         id: x.id,
@@ -207,7 +204,7 @@ export class CsvUploadComponent implements OnInit {
     }
     return 0;
   }
-
+  // !
   getActualVisitTimeDiffrenceInHours(actualStart: Date | undefined, actualEnd: Date | undefined, scheduledStart: Date | undefined, scheduledEnd: Date | undefined): number {
     let quarters = 0;
     if (actualStart && scheduledStart) {
@@ -231,12 +228,14 @@ export class CsvUploadComponent implements OnInit {
     }
     return 0;
   }
+  // !
 
   getTimeDiffrenceInMinutes(start: Date | undefined, end?: Date): number {
     if (start && end) {
-      let value = ((end as any) - (start as any)) / 60000;
+      let value = ((start as any) - (end as any)) / 60000;
       console.log(value);
       return value;
+
     }
     return 0;
   }
@@ -288,13 +287,14 @@ export class CsvUploadComponent implements OnInit {
       } else if (endTimeDiff < 0) {
         validation.lateOut = endTimeDiff;
         notes.push('Late out by ' + Math.abs(endTimeDiff) + ' Min.');
+
       };
 
     }
 
     if (visit.billed) {
       validation.color = 'green';
-    }else if (validation.missedIn || validation.missedOut) {
+    } else if (validation.missedIn || validation.missedOut) {
       validation.color = 'red';
     } else if (validation.earlyIn) {
       validation.color = 'lightgreen';
