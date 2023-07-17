@@ -33,15 +33,22 @@
         <div class="form-row row bg-light p-20 mb-20" style="margin-top: 20px; padding: 20px;">
             <div class="col-md-6 mb-3">
                 <label for="start-date" class="labelPosition">Start Date</label>
-                <input type="date" id="start-date" formControlName="startDate" class="form-control py-2">
+                <!-- <input type="date" id="start-date" formControlName="startDate" class="form-control py-2"> -->
+
+                <input type="text" placeholder="From" formControlName="startDate" class="form-control py-2" bsDatepicker
+                    [bsConfig]="{ isAnimated: true }">
+
             </div>
             <div class="col-md-6 mb-3">
                 <label for="end-date" class="labelPosition">End Date</label>
-                <input type="date" id="end-date" name="endDate" formControlName="endDate" class="form-control py-2">
+                <!-- <input type="date" id="end-date" name="endDate" formControlName="endDate" class="form-control py-2"> -->
+                <input type="text" placeholder="To" formControlName="endDate" class="form-control py-2" bsDatepicker
+                    [bsConfig]="{ isAnimated: true }">
             </div>
             <div class="col-md-6 mb-3 mt-4">
                 <label for="totalDays" class="labelPosition">Total Days</label>
-                <input type="text" id="totalDays" class="form-control py-2" name="totalDays" formControlName="totalDays">
+                <input type="text" id="totalDays" class="form-control py-2" name="totalDays"
+                    formControlName="totalDays">
             </div>
             <div class="col-md-6 mb-3 mt-4">
                 <label for="hours-input" class="labelPosition">Total Authorization Period Hours</label>
@@ -78,7 +85,8 @@
 
     <div class="row resultInfo" *ngIf="result" style="margin-top: 20px; padding: 20px;">
         <div class="col-md-6 mt-20 p-20">
-            <h3 class="mt-2"><strong class="me-2">From :</strong> {{result.startDate | date}} <strong class="ms-4">To :</strong> {{result.endDate | date}} </h3>
+            <h3 class="mt-2"><strong class="me-2">From :</strong> {{result.startDate | date}} <strong class="ms-4">To
+                    :</strong> {{result.endDate | date}} </h3>
             <hr class="my-4">
             <h1 class="daysresult">Result: {{result.days}} Days</h1>
             <hr class="my-4" *ngIf="!result.hasWorkingHours">

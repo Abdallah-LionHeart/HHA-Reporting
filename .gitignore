@@ -7,8 +7,10 @@
 /bazel-out
 /*-win32-x64
 /*-darwin-arm64
-billing-assistant-darwin-arm64.zip
+/*-darwin-x64
 billing-assistant-win32-x64.rar
+billing-assistant-darwin-arm64.zip
+billing-assistant-darwin-x64.zip
 
 # Node
 /node_modules

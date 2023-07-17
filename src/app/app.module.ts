@@ -9,6 +9,10 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -22,6 +26,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
+    BsDatepickerModule.forRoot(),
+
 
   ],
   providers: [],

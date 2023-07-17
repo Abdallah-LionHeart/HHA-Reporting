@@ -1,2 +1,8 @@
 package files for windows
 npx electron-packager . --platform=win32
+
+package files for mac
+npx electron-packager . --platform=darwin --arch=arm64
+npx electron-packager . --platform=darwin --arch=x64
+
+
