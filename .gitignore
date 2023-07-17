@@ -6,6 +6,9 @@
 /out-tsc
 /bazel-out
 /*-win32-x64
+/*-darwin-arm64
+billing-assistant-darwin-arm64.zip
+billing-assistant-win32-x64.rar
 
 # Node
 /node_modules
