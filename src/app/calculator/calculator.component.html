@@ -9,7 +9,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             </ul>
             <form class="d-flex">
-               
+
                 <button class="btn btn-outline-success ms-2" routerLink="/import">Billing Assistant</button>
             </form>
             <!-- <a class="nav-link ms-2 cal-color" routerLink="/time-calculate">Calculator</a> -->
@@ -21,7 +21,7 @@
 <div class="container">
 
     <form class="row d-lg-none d-xl-none" style="margin-top: 20px; margin-bottom: 20px;">
-       
+
         <div class="col-md-6 ">
             <div class="d-flex justify-content-center">
                 <button class="btn btn-outline-success ms-2" routerLink="/import">Billing Assistant</button>
@@ -33,23 +33,23 @@
         <div class="form-row row bg-light p-20 mb-20" style="margin-top: 20px; padding: 20px;">
             <div class="col-md-6 mb-3">
                 <label for="start-date" class="labelPosition">Start Date</label>
-                <input type="date" id="start-date" formControlName="startDate" class="form-control">
+                <input type="date" id="start-date" formControlName="startDate" class="form-control py-2">
             </div>
             <div class="col-md-6 mb-3">
                 <label for="end-date" class="labelPosition">End Date</label>
-                <input type="date" id="end-date" name="endDate" formControlName="endDate" class="form-control">
+                <input type="date" id="end-date" name="endDate" formControlName="endDate" class="form-control py-2">
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-3 mt-4">
                 <label for="totalDays" class="labelPosition">Total Days</label>
-                <input type="text" id="totalDays" class="form-control" name="totalDays" formControlName="totalDays">
+                <input type="text" id="totalDays" class="form-control py-2" name="totalDays" formControlName="totalDays">
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-3 mt-4">
                 <label for="hours-input" class="labelPosition">Total Authorization Period Hours</label>
                 <input type="number" id="hours-input" name="hoursInput" formControlName="workingHours"
-                    class="form-control">
+                    class="form-control py-2">
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-3 mt-4">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"
                         formControlName="includeEndDate">
@@ -59,16 +59,16 @@
                 </div>
             </div>
 
-            
+
 
         </div>
 
         <div class="row justify-content-end">
 
-            <div class="col-12 mb-3 d-flex justify-content-end">
-                <button type="button" class="btn btn-primary me-2" (click)="calculate()"
+            <div class="col-4 mb-3 d-flex justify-content-end btn-group mt-3">
+                <button type="button" class="btn btn-outline-info me-2" (click)="calculate()"
                     [disabled]="form.invalid">Submit</button>
-                <button type=button class="btn btn-outline ps-3 pe-3" name=print value="Print"
+                <button type=button class="btn btn-outline-secondary ps-3 pe-3" name=print value="Print"
                     onClick="window.print()" [disabled]="!result">Print</button>
             </div>
 
@@ -76,24 +76,48 @@
         </div>
     </form>
 
-    <div class="row bg-dark-subtle " *ngIf="result" style="margin-top: 20px; padding: 20px;">
+    <div class="row resultInfo" *ngIf="result" style="margin-top: 20px; padding: 20px;">
         <div class="col-md-6 mt-20 p-20">
-            <p>From: <b>{{result.startDate | date}}</b></p>
-            <p>To: <b>{{result.endDate | date}}</b></p>
-            <hr class="my-2">
-            <h3>Result: {{result.days}} Days</h3>
-            <hr class="my-2">
-            <p *ngIf="result.hasWorkingHours">Per Day: <b>{{result.workingHoursPerDay | number: '1.0-1'}}</b> hours per day</p>
-            <p *ngIf="result.hasWorkingHours">Per Week: <b>{{result.workingHoursPerWeek | number: '1.0-1'}}</b> hours a week</p>
+            <h3 class="mt-2"><strong class="me-2">From :</strong> {{result.startDate | date}} <strong class="ms-4">To :</strong> {{result.endDate | date}} </h3>
+            <hr class="my-4">
+            <h1 class="daysresult">Result: {{result.days}} Days</h1>
+            <hr class="my-4" *ngIf="!result.hasWorkingHours">
+            <table *ngIf="result.hasWorkingHours" style="margin-top: 2.1rem;align-items:left">
+                <tr>
+                    <th>Hours per Day</th>
+                    <td>{{result.workingHoursPerDay | number: '1.0-1'}} hours</td>
+                </tr>
+                <tr>
+                    <th>Hours per Week</th>
+                    <td>{{result.workingHoursPerWeek | number: '1.0-1' }} hours</td>
+                </tr>
+            </table>
         </div>
 
         <div class="col-md-6 mt-20 p-20">
-            <h2>Alternative time units</h2>
-            <p>Weeks: {{result.weeks | number: '1.0-1'}}</p>
-            <p>Days: {{result.days | number: '1.0-1'}}</p>
-            <p>Hours: {{result.hours | number: '1.0-1'}}</p>
-            <p>Minutes: {{result.minutes | number: '1.0-1'}}</p>
-            <p>Seconds: {{result.seconds | number: '1.0-1'}}</p>
+            <h1>Alternative time units</h1>
+            <table>
+                <tr>
+                    <th>Total Week</th>
+                    <td>{{result.weeks | number: '1.0-1'}} weeks</td>
+                </tr>
+                <tr>
+                    <th>Total Days</th>
+                    <td>{{result.days | number: '1.0-1'}} days</td>
+                </tr>
+                <tr>
+                    <th>Total Hours</th>
+                    <td>{{result.hours | number: '1.0-1' }} hours</td>
+                </tr>
+                <tr>
+                    <th>Total Minutes</th>
+                    <td>{{result.minutes | number: '1.0-1' }} minutes</td>
+                </tr>
+                <tr>
+                    <th>Total Seconds</th>
+                    <td>{{result.seconds | number: '1.0-1' }} minutes</td>
+                </tr>
+            </table>
         </div>
     </div>
 </div>
