@@ -10,8 +10,7 @@
                     name="something" [ngModelOptions]="{standalone: true}" [disabled]="allPatients.length == 0">
                 <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success ms-2 d-flex">IMPORT</label>
 
-                <button class="btn btn-outline-success ms-2" (click)="downloadFile()">EXPORT</button>
-
+                <button class="btn btn-outline-success ms-2" (click)="exportVisitsToExcel()">EXPORT</button>
                 <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
             </form>
         </div>
@@ -30,7 +29,11 @@
         <div class="col-md-6 ">
             <div class="d-flex justify-content-center">
                 <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success">IMPORT</label>
-                <button class="btn btn-outline-success ms-2" (click)="downloadFile()">EXPORT</button>
+
+                <button class="btn btn-outline-success ms-2" (click)="downloadFile()">Get Sample</button>
+
+                <button class="btn btn-outline-success ms-2" (click)="exportVisitsToExcel()">Export</button>
+
                 <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
             </div>
         </div>
@@ -44,13 +47,15 @@
             <tr class="row-1">
                 <th colspan="3">Patient ID</th>
                 <th colspan="3">Patient Name</th>
-                <th colspan="3">Total Billable Hours</th>
+                <th colspan="2">Total Billable Hours</th>
+                <th>Total Cumulative Hours</th>
                 <th>#</th>
             </tr>
             <tr class="row-2">
                 <td colspan="3">{{patient.id}}</td>
                 <td colspan="3">{{patient.patientName}}</td>
-                <td colspan="3">{{patient.billableHours}}/{{patient.scheduledHours}}</td>
+                <td colspan="2">{{patient.billableHours}}/{{patient.scheduledHours}}</td>
+                <td>{{patient.cumulativeScheduledHours}}/{{patient.totalScheduledHours}}</td>
                 <td>{{index + 1}}</td>
             </tr>
             <tr class="row-3">
