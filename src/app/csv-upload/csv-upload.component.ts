@@ -333,7 +333,6 @@ export class CsvUploadComponent implements OnInit {
   }
 
   getNotes(visit: Visit) {
-    debugger
     let notes: string[] = [];
     let validation: Validation = {
       earlyIn: 0,
