@@ -432,15 +432,16 @@ export class CsvUploadComponent implements OnInit {
     if (validation.lateIn >= 7 && validation.earlyIn > 0 && validation.lateOut > 0) {
       validation.color = 'gold';
     }
-    if (validation.lateIn >= 7 && validation.earlyOut >= 7) {
-      validation.color = 'gold';
-    }
     if (validation.earlyOut >= 7 && validation.lateOut > 0 && validation.earlyIn > 0) {
       validation.color = 'gold';
     }
-    if (validation.earlyOut >= 7 && validation.lateIn >= 7) {
+
+    if (validation.lateIn >= 7 && validation.earlyOut >= 7 || validation.earlyOut >= 7 && validation.lateIn >= 7) {
       validation.color = 'gold';
     }
+    // if (validation.earlyOut >= 7 && validation.lateIn >= 7) {
+    //   validation.color = 'gold';
+    // }
 
 
     visit.validation = validation;
