@@ -368,7 +368,7 @@ export class CsvUploadComponent implements OnInit {
 
       if (startTimeDiff > 0) {
         validation.earlyIn = startTimeDiff;
-        if (startTimeDiff >= 60) {
+        if (Math.abs(startTimeDiff) >= 60) {
           const hours = Math.floor(startTimeDiff / 60);
           const minutes = startTimeDiff % 60;
           notes.push(`Early in by ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`);
@@ -400,7 +400,7 @@ export class CsvUploadComponent implements OnInit {
 
       if (endTimeDiff > 0) {
         validation.earlyOut = endTimeDiff;
-        if (endTimeDiff >= 60) {
+        if (Math.abs(endTimeDiff) >= 60) {
           const hours = Math.floor(endTimeDiff / 60);
           const minutes = endTimeDiff % 60;
           notes.push(`Early out by ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`);
@@ -424,7 +424,8 @@ export class CsvUploadComponent implements OnInit {
         } else {
           notes.push('Late out by ' + Math.abs(endTimeDiff) + ' minute' + (Math.abs(endTimeDiff) > 1 ? 's' : ''));
         }
-        validation.color = 'lightgreen';
+        // validation.color = 'lightgreen';
+        validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen'; // this i think fix the bugs 
       }
     }
 
