@@ -181,7 +181,7 @@ export class CsvUploadComponent implements OnInit {
           earlyIn: 0,
           earlyOut: 0,
           lateIn: 0,
-          lateInMoreSeven: 0,
+          // lateIn: 0,
           lateOut: 0,
           missedIn: false,
           missedOut: false,
@@ -338,7 +338,7 @@ export class CsvUploadComponent implements OnInit {
       earlyIn: 0,
       earlyOut: 0,
       lateIn: 0,
-      lateInMoreSeven: 0,
+      // lateIn: 0,
       lateOut: 0,
       missedIn: false,
       missedOut: false,
@@ -364,6 +364,8 @@ export class CsvUploadComponent implements OnInit {
 
     if (visit.actualVisitStart && visit.actualVisitEnd) {
       let startTimeDiff = this.getTimeDiffrenceInMinutes(new Date(visit.visitScheduledStart as Date), new Date(visit.actualVisitStart as Date));
+      let endTimeDiff = this.getTimeDiffrenceInMinutes(new Date(visit.visitScheduledEnd as Date), new Date(visit.actualVisitEnd as Date));
+
       if (startTimeDiff > 0) {
         validation.earlyIn = startTimeDiff;
         if (startTimeDiff >= 60) {
@@ -374,35 +376,46 @@ export class CsvUploadComponent implements OnInit {
           notes.push('Early in by ' + startTimeDiff + ' minute' + (startTimeDiff > 1 ? 's' : ''));
         }
         validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
-      } else if (startTimeDiff < 0) {
+
+      }
+
+      else if (startTimeDiff < 0) {
         validation.lateIn = startTimeDiff;
         if (Math.abs(startTimeDiff) >= 60) {
           const hours = Math.floor(Math.abs(startTimeDiff) / 60);
           const minutes = Math.abs(startTimeDiff) % 60;
           notes.push(`Late in by ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`);
+          // validation.color = 'gold';
         } else {
           notes.push('Late in by ' + Math.abs(startTimeDiff) + ' minute' + (Math.abs(startTimeDiff) > 1 ? 's' : ''));
         }
+
+
         if (Math.abs(startTimeDiff) >= 7) {
-          validation.lateInMoreSeven = Math.abs(startTimeDiff);
           validation.color = 'gold';
         } else {
           validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
         }
       }
 
-      let endTimeDiff = this.getTimeDiffrenceInMinutes(visit.visitScheduledEnd, visit.actualVisitEnd);
       if (endTimeDiff > 0) {
         validation.earlyOut = endTimeDiff;
         if (endTimeDiff >= 60) {
           const hours = Math.floor(endTimeDiff / 60);
           const minutes = endTimeDiff % 60;
           notes.push(`Early out by ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`);
+          // validation.color = 'gold';
         } else {
           notes.push('Early out by ' + endTimeDiff + ' minute' + (endTimeDiff > 1 ? 's' : ''));
         }
-        validation.color = endTimeDiff >= 7 ? 'gold' : 'lightgreen';
-      } else if (endTimeDiff < 0) {
+        if (Math.abs(endTimeDiff) >= 7) {
+          validation.color = 'gold';
+        } else {
+          validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
+        }
+      }
+
+      else if (endTimeDiff < 0) {
         validation.lateOut = endTimeDiff;
         if (Math.abs(endTimeDiff) >= 60) {
           const hours = Math.floor(Math.abs(endTimeDiff) / 60);
@@ -411,9 +424,24 @@ export class CsvUploadComponent implements OnInit {
         } else {
           notes.push('Late out by ' + Math.abs(endTimeDiff) + ' minute' + (Math.abs(endTimeDiff) > 1 ? 's' : ''));
         }
-        validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
+        validation.color = 'lightgreen';
       }
     }
+
+    // Check conditions for setting validation color to gold
+    if (validation.lateIn >= 7 && validation.earlyIn > 0 && validation.lateOut > 0) {
+      validation.color = 'gold';
+    }
+    if (validation.lateIn >= 7 && validation.earlyOut >= 7) {
+      validation.color = 'gold';
+    }
+    if (validation.earlyOut >= 7 && validation.lateOut > 0 && validation.earlyIn > 0) {
+      validation.color = 'gold';
+    }
+    if (validation.earlyOut >= 7 && validation.lateIn >= 7) {
+      validation.color = 'gold';
+    }
+
 
     visit.validation = validation;
     visit.notes = notes;
@@ -479,7 +507,7 @@ export interface Visit {
 
 export interface Validation {
   lateIn: number;
-  lateInMoreSeven: number
+  // lateIn: number
   lateOut: number;
   earlyIn: number;
   earlyOut: number;
