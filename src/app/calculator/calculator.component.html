@@ -36,13 +36,13 @@
                 <!-- <input type="date" id="start-date" formControlName="startDate" class="form-control py-2"> -->
 
                 <input type="text" placeholder="From" formControlName="startDate" class="form-control py-2" bsDatepicker
-                    [bsConfig]="datePickerConfig">
+                [bsConfig]="{customTodayClass: 'custom-today-class'}">
 
             </div>
             <div class="col-md-6 mb-3">
                 <label for="end-date" class="labelPosition">End Date</label>
                 <input type="text" placeholder="To" formControlName="endDate" class="form-control py-2" bsDatepicker
-                    [bsConfig]="datePickerConfig">
+                    [bsConfig]="{customTodayClass: 'custom-today-class'}">
             </div>
             <div class="col-md-6 mb-3 mt-4">
                 <label for="totalDays" class="labelPosition">Total Days</label>

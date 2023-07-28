@@ -10,7 +10,7 @@
                     name="something" [ngModelOptions]="{standalone: true}" [disabled]="allPatients.length == 0">
                 <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success ms-2 d-flex">IMPORT</label>
 
-                <button class="btn btn-outline-success ms-2" (click)="exportVisitsToExcel()">EXPORT</button>
+                <button class="btn btn-outline-success ms-2" (click)="exportVisitsToExcel()" *ngIf="allPatients.length > 0">EXPORT</button>
                 <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
             </form>
         </div>
