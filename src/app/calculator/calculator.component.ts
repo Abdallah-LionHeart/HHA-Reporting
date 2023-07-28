@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { BsDatepickerConfig } from 'ngx-bootstrap/datepicker';
 
 @Component({
   selector: 'app-calculator',
@@ -10,7 +11,14 @@ export class CalculatorComponent implements OnInit {
 
   form!: FormGroup;
   result: Result | null = null;
-  constructor(private fb: FormBuilder) { }
+  datePickerConfig: Partial<BsDatepickerConfig>;
+
+  constructor(private fb: FormBuilder) {
+    this.datePickerConfig = {
+      isAnimated: true,
+      dateInputFormat: 'DD-MM-YYYY',
+    };
+  }
 
   ngOnInit(): void {
     this.form = this.fb.group({

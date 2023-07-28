@@ -36,14 +36,13 @@
                 <!-- <input type="date" id="start-date" formControlName="startDate" class="form-control py-2"> -->
 
                 <input type="text" placeholder="From" formControlName="startDate" class="form-control py-2" bsDatepicker
-                    [bsConfig]="{ isAnimated: true }">
+                    [bsConfig]="datePickerConfig">
 
             </div>
             <div class="col-md-6 mb-3">
                 <label for="end-date" class="labelPosition">End Date</label>
-                <!-- <input type="date" id="end-date" name="endDate" formControlName="endDate" class="form-control py-2"> -->
                 <input type="text" placeholder="To" formControlName="endDate" class="form-control py-2" bsDatepicker
-                    [bsConfig]="{ isAnimated: true }">
+                    [bsConfig]="datePickerConfig">
             </div>
             <div class="col-md-6 mb-3 mt-4">
                 <label for="totalDays" class="labelPosition">Total Days</label>
@@ -73,10 +72,10 @@
         <div class="row justify-content-end">
 
             <div class="col-4 mb-3 d-flex justify-content-end btn-group mt-3">
-                <button type="button" class="btn btn-outline-info me-2" (click)="calculate()"
-                    [disabled]="form.invalid">Submit</button>
-                <button type=button class="btn btn-outline-secondary ps-3 pe-3" name=print value="Print"
+                <button type=button class="btn btn-outline-secondary me-2" name=print value="Print"
                     onClick="window.print()" [disabled]="!result">Print</button>
+                <button type="button" class="btn btn-outline-info ps-3 pe-3" (click)="calculate()"
+                    [disabled]="form.invalid">Submit</button>
             </div>
 
 
