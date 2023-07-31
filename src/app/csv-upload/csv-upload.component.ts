@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+// import { MatDialog } from '@angular/material/dialog';
+// import { Subject, debounceTime } from 'rxjs';
 import { Subject, debounceTime } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { FileNameInputDialogComponent } from './file-name-input-dialog/file-name-input-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-csv-upload',
@@ -300,7 +302,7 @@ export class CsvUploadComponent implements OnInit {
     let quarters = 0;
     let startDifInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
 
-    if (startDifInMinutes > 5) {
+    if (startDifInMinutes > 7) {
       quarters = Math.ceil(startDifInMinutes / 15);
       scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
     }
@@ -308,7 +310,7 @@ export class CsvUploadComponent implements OnInit {
     if (actualEnd && scheduledEnd && actualEnd < scheduledEnd) {
       let endDifInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
 
-      if (endDifInMinutes > 5) {
+      if (endDifInMinutes > 7) {
         quarters = Math.ceil(endDifInMinutes / 15);
         scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
       }

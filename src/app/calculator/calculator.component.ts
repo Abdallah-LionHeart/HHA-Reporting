@@ -12,12 +12,17 @@ export class CalculatorComponent implements OnInit {
   form!: FormGroup;
   result: Result | null = null;
   datePickerConfig: Partial<BsDatepickerConfig>;
-  today = new Date();
 
   constructor(private fb: FormBuilder) {
     this.datePickerConfig = {
       isAnimated: true,
       dateInputFormat: 'DD-MM-YYYY',
+      customTodayClass: 'custom-today-class',
+      containerClass: 'theme-dark-blue',
+      showWeekNumbers: false,
+
+      // showClearButton: true,
+      // showTodayButton: true,
     };
   }
 

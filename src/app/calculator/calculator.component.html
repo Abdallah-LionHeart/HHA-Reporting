@@ -36,32 +36,26 @@
                 <!-- <input type="date" id="start-date" formControlName="startDate" class="form-control py-2"> -->
 
                 <input type="text" placeholder="From" formControlName="startDate" class="form-control py-2" bsDatepicker
-                [bsConfig]="{customTodayClass: 'custom-today-class'}">
+                    [bsConfig]="datePickerConfig">
 
             </div>
             <div class="col-md-6 mb-3">
                 <label for="end-date" class="labelPosition">End Date</label>
-                <input type="text" placeholder="To" formControlName="endDate" class="form-control py-2" bsDatepicker
-                    [bsConfig]="{customTodayClass: 'custom-today-class'}">
+                <input type="text" placeholder="To" formControlName="endDate" class="form-control py-2" bsDatepicker [bsConfig]="datePickerConfig">
             </div>
             <div class="col-md-6 mb-3 mt-4">
                 <label for="totalDays" class="labelPosition">Total Days</label>
-                <input type="text" id="totalDays" class="form-control py-2" name="totalDays"
-                    formControlName="totalDays">
+                <input type="text" id="totalDays" class="form-control py-2" name="totalDays" formControlName="totalDays">
             </div>
             <div class="col-md-6 mb-3 mt-4">
-                <label for="hours-input" class="labelPosition">Total Authorization Period Hours</label>
-                <input type="number" id="hours-input" name="hoursInput" formControlName="workingHours"
-                    class="form-control py-2">
+                <label for="workingHours" class="labelPosition">Total Authorization Period Hours</label>
+                <input type="number" id="workingHours" name="workingHours" formControlName="workingHours" class="form-control py-2">
             </div>
 
             <div class="col-md-6 mb-3 mt-4">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"
-                        formControlName="includeEndDate">
-                    <label class="form-check-label" for="flexCheckDefault">
-                        Include End Date
-                    </label>
+                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" formControlName="includeEndDate">
+                    <label class="form-check-label" for="flexCheckDefault"> Include End Date </label>
                 </div>
             </div>
 
@@ -72,10 +66,8 @@
         <div class="row justify-content-end">
 
             <div class="col-4 mb-3 d-flex justify-content-end btn-group mt-3">
-                <button type=button class="btn btn-outline-secondary me-2" name=print value="Print"
-                    onClick="window.print()" [disabled]="!result">Print</button>
-                <button type="button" class="btn btn-outline-info ps-3 pe-3" (click)="calculate()"
-                    [disabled]="form.invalid">Submit</button>
+                <button type=button class="btn btn-outline-secondary me-2" name=print value="Print" onClick="window.print()" [disabled]="!result">Print</button>
+                <button type="button" class="btn btn-outline-info ps-3 pe-3" (click)="calculate()" [disabled]="form.invalid">Submit</button>
             </div>
 
 
@@ -87,7 +79,7 @@
             <h3 class="mt-2"><strong class="me-2">From :</strong> {{result.startDate | date}} <strong class="ms-4">To
                     :</strong> {{result.endDate | date}} </h3>
             <hr class="my-4">
-            <h1 class="daysresult">Result: {{result.days}} Days</h1>
+            <h1 class="daysresult">Result: {{result.days | number :'1.0-1'}} Days</h1>
             <hr class="my-4" *ngIf="!result.hasWorkingHours">
             <table *ngIf="result.hasWorkingHours" style="margin-top: 2.1rem;align-items:left">
                 <tr>
