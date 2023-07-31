@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 // import { MatDialog } from '@angular/material/dialog';
 // import { Subject, debounceTime } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 import { Subject, debounceTime } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { FileNameInputDialogComponent } from './file-name-input-dialog/file-name-input-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-csv-upload',
@@ -450,14 +450,6 @@ export class CsvUploadComponent implements OnInit {
     visit.validation = validation;
     visit.notes = notes;
   }
-
-  downloadFile() {
-    let link = document.createElement("a");
-    link.download = "sample-file";
-    link.href = "assets/files/sample-file.csv";
-    link.click();
-  }
-
 
 }
 
