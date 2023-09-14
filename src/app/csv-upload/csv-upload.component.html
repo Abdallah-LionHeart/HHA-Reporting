@@ -1,6 +1,6 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="#">Billing Assistant</a>
+        <a class="navbar-brand" href="#">HHA Reporting</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             </ul>
@@ -40,6 +40,10 @@
     <input id="VisitLog" type="file" style="visibility: hidden;" (change)="onFileSelected($event)" accept=".csv">
 
     <div class="table-responsive">
+        <!-- <div *ngFor="let caregiver of caregiverTotalHoursMap.keys()">
+            <p>Caregiver Name: {{ caregiver }}</p>
+            <p>Total Hours: {{ caregiverTotalHoursMap.get(caregiver) }}</p>
+        </div> -->
 
         <table class="table table-striped-columns" id="table" *ngFor="let patient of patients; let index = index;">
             <tr class="row-1">
@@ -56,6 +60,8 @@
                 <td>{{patient.cumulativeScheduledHours}}/{{patient.totalScheduledHours}}</td>
                 <td>{{index + 1}}</td>
             </tr>
+
+
             <tr class="row-3">
                 <th>#</th>
                 <th>Care giver</th>
@@ -68,10 +74,12 @@
                 <th>Remarks</th>
                 <th>Total Hrs</th>
             </tr>
+
             <tr *ngFor="let visit of patient.visits; let i = index" class="row-4"
                 [ngStyle]="{'background-color': visit.validation.color}"
                 [ngClass]="{'text-white': visit.validation.color == 'red' || visit.validation.color == 'green'}">
-                <td>{{i + 1}}</td>
+                <!-- <td>{{i + 1}}</td> -->
+                <td>{{visit.orderNumber}}</td>
                 <td>{{visit.caregiverName}}</td>
                 <td>{{visit.assignmentId}}</td>
                 <td>{{visit.contractName}}</td>

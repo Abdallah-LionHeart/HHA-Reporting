@@ -13,6 +13,9 @@ import { FileNameInputDialogComponent } from './file-name-input-dialog/file-name
 })
 export class CsvUploadComponent implements OnInit {
 
+  caregiverTotalHoursMap: Map<string, number> = new Map<string, number>();
+  caregiverIndex: string = '' // Initialize it to 0
+
 
   allPatients: Patient[] = [];
   patients: Patient[] = [];
@@ -70,9 +73,6 @@ export class CsvUploadComponent implements OnInit {
   parseCSV(contents: string) {
     let rows: any[] = contents.split('\n');
     rows.shift();
-    rows.shift();
-    rows.shift();
-    rows.shift();
     rows = rows.map(x => x.split(','));
     rows = rows.map(x => ({
       id: x[0],
@@ -94,19 +94,37 @@ export class CsvUploadComponent implements OnInit {
       return r;
     }, Object.create(null));
 
+    // const caregiverTotalHoursMap: Map<string, number> = new Map<string, number>();
+
     this.patients = [];
     let totalScheduledHours = 0;
     let cumulativeScheduledHours = 0;
     for (var prop in result) {
       if (Object.prototype.hasOwnProperty.call(result, prop)) {
         if (prop == '' || prop == 'undefined') {
+          continue;
 
         } else {
           let group = result[prop];
+          var visits = this.getVisits(group);
+          var caregiverNames = [...new Set(visits.map(x =>
+            x.caregiverName
+          ))]
+          caregiverNames.forEach(caregiverName => {
+            let caregiverVisits = visits.filter(x => x.caregiverName == caregiverName);
+
+            let caregiver = {
+              name: caregiverName,
+              visit: caregiverVisits,
+              totalHours:
+            } as Caregiver
+          });
+
           let patient: Patient = {
             id: prop,
             patientName: '',
-            visits: this.getVisits(group),
+            cargivers: [],
+            visits: visits,
             scheduledHours: 0,
             billableHours: 0,
             totalScheduledHours: 0,
@@ -124,15 +142,27 @@ export class CsvUploadComponent implements OnInit {
 
 
           patient.cumulativeScheduledHours = patient.scheduledHours + cumulativeScheduledHours;
-
           cumulativeScheduledHours = patient.cumulativeScheduledHours;
 
 
-
+          patient.cargivers;
 
 
           this.patients.push(patient);
 
+
+          group.forEach((visit: Row) => {
+            const caregiverName = visit.caregiverName;
+            const visitObject = patient.visits.find(v => v.id === visit.id);
+            if (visitObject && caregiverName) {
+              const actualVisitHourDiff = visitObject.actualVisitHourDiffrence;
+              if (this.caregiverTotalHoursMap.has(caregiverName)) {
+                this.caregiverTotalHoursMap.set(caregiverName, this.caregiverTotalHoursMap.get(caregiverName)! + actualVisitHourDiff);
+              } else {
+                this.caregiverTotalHoursMap.set(caregiverName, actualVisitHourDiff);
+              }
+            }
+          });
         }
       }
     }
@@ -151,6 +181,7 @@ export class CsvUploadComponent implements OnInit {
   getVisits(rows: Row[]): Visit[] {
 
     let visits: Visit[] = [];
+    let caregiverOrderNumbers: Map<string, number> = new Map<string, number>();
 
     rows.forEach(x => {
       let date = new Date(x.date);
@@ -160,6 +191,20 @@ export class CsvUploadComponent implements OnInit {
       let actualVisitStart = this.getStartTime(new Date(date), x.actualVisit);
       let actualVisitEnd = this.getEndTime(new Date(date), x.actualVisit, actualVisitStart);
       let actualVisitHourDiffrence = this.getActualVisitTimeDifferenceInHours(actualVisitStart, actualVisitEnd, new Date(visitScheduledStart as Date), new Date(visitScheduledEnd as Date));
+
+      let caregiverName = x.caregiverName;
+
+      // Check if the caregiver order number exists, if not, initialize it to 1
+      if (!caregiverOrderNumbers.has(caregiverName)) {
+        caregiverOrderNumbers.set(caregiverName, 1);
+      }
+
+      // Get the current order number for this caregiver
+      let caregiverOrderNumber = caregiverOrderNumbers.get(caregiverName) || 1;
+
+      // Update the order number for the next visit by incrementing it
+      caregiverOrderNumbers.set(caregiverName, caregiverOrderNumber + 1);
+
 
 
       let visit: Visit = {
@@ -188,7 +233,8 @@ export class CsvUploadComponent implements OnInit {
           missedIn: false,
           missedOut: false,
           color: ''
-        }
+        },
+        orderNumber: caregiverOrderNumber
       }
       this.getNotes(visit);
       visits.push(visit);
@@ -214,6 +260,7 @@ export class CsvUploadComponent implements OnInit {
       actualVisit: visit.actualVisitStart?.toLocaleTimeString() ?? '',
       actualVisitEnd: visit.actualVisitEnd?.toLocaleTimeString() ?? '',
       totalHours: `${visit.actualVisitHourDiffrence}/${visit.visitScheduledHourDiffrence}`,
+      NoteForTotalHours: visit.actualVisitHourDiffrence !== visit.visitScheduledHourDiffrence ? 'Not Matching' : '',
       totalBillableHours: `${patient.billableHours}/${patient.scheduledHours}`,
       cumulativeBillableHours: patient.cumulativeScheduledHours,
       totalCumulativeHours: patient.totalScheduledHours,
@@ -255,7 +302,6 @@ export class CsvUploadComponent implements OnInit {
       window.URL.revokeObjectURL(url);
     });
   }
-
 
 
   getStartTime(date: Date, time: string): Date | undefined {
@@ -302,7 +348,7 @@ export class CsvUploadComponent implements OnInit {
     let quarters = 0;
     let startDifInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
 
-    if (startDifInMinutes > 7) {
+    if (startDifInMinutes >= 5) {
       quarters = Math.ceil(startDifInMinutes / 15);
       scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
     }
@@ -310,7 +356,7 @@ export class CsvUploadComponent implements OnInit {
     if (actualEnd && scheduledEnd && actualEnd < scheduledEnd) {
       let endDifInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
 
-      if (endDifInMinutes > 7) {
+      if (endDifInMinutes > 5) {
         quarters = Math.ceil(endDifInMinutes / 15);
         scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
       }
@@ -477,6 +523,8 @@ export interface Patient {
   totalScheduledHours: number;
   cumulativeScheduledHours: number;
   visits: Visit[];
+  cargivers: Caregiver[];
+
 }
 
 
@@ -499,6 +547,17 @@ export interface Visit {
   notes: string[];
   billed: boolean;
   validation: Validation;
+  // !
+  orderNumber: number;
+}
+
+// add new interface for caregiver
+// name  visit[] ,total hours
+
+export interface Caregiver {
+  visits: Visit[];
+  name: string;
+  totalHours: number;
 }
 
 export interface Validation {

@@ -68,7 +68,8 @@ export class CalculatorComponent implements OnInit {
 
     let days: number = ((endDate as any) - (startDate as any)) / (1000 * 60 * 60 * 24);
     if (days > 0) {
-      return days;
+      return Math.trunc(days);
+      // return days;
     } else {
       return 0;
     }

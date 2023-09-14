@@ -1,3 +1,5 @@
 {
-  "editor.guides.bracketPairs": "active"
+  "editor.guides.bracketPairs": "active",
+  "editor.fontFamily": "Consolas, 'Courier New', monospace",
+  "markdown.preview.fontFamily": " BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif"
 }

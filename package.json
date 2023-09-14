@@ -4,11 +4,13 @@
   "main": "main.js",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "electron-forge start",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "electron": "ng build && electron ."
+    "electron": "ng build && electron .",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "private": true,
   "dependencies": {
@@ -25,6 +27,7 @@
     "@ng-bootstrap/ng-bootstrap": "^13.0.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.2.0",
+    "electron-squirrel-startup": "^1.0.0",
     "ngx-bootstrap": "^9.0.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
@@ -35,10 +38,15 @@
     "@angular-devkit/build-angular": "^14.2.4",
     "@angular/cli": "~14.2.4",
     "@angular/compiler-cli": "^14.2.0",
+    "@electron-forge/cli": "^6.4.2",
+    "@electron-forge/maker-deb": "^6.4.2",
+    "@electron-forge/maker-rpm": "^6.4.2",
+    "@electron-forge/maker-squirrel": "^6.4.2",
+    "@electron-forge/maker-zip": "^6.4.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
     "@types/jasmine": "~4.0.0",
     "@types/jest": "^29.5.3",
     "electron": "^25.3.0",
-    "electron-packager": "^17.1.1",
     "jasmine-core": "~4.3.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -46,5 +54,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "typescript": "~4.7.2"
-  }
+  },
+  "description": "help with accounting process",
+  "author": "Abdallah Al-Maqableh",
+  "license": "MIT"
 }
