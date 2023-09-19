@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-// import { MatDialog } from '@angular/material/dialog';
-// import { Subject, debounceTime } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, debounceTime } from 'rxjs';
 import * as XLSX from 'xlsx';
@@ -13,12 +11,11 @@ import { FileNameInputDialogComponent } from './file-name-input-dialog/file-name
 })
 export class CsvUploadComponent implements OnInit {
 
-  caregiverTotalHoursMap: Map<string, number> = new Map<string, number>();
-  caregiverIndex: string = '' // Initialize it to 0
-
-
+  caregiverIndex: string = ''
+  importedFileName: string = '';
   allPatients: Patient[] = [];
   patients: Patient[] = [];
+  caregivers: Caregiver[] = [];
 
   searchQuery = '';
   searchQueryChanged = new Subject<string>();
@@ -56,6 +53,7 @@ export class CsvUploadComponent implements OnInit {
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
+    this.importedFileName = file.name;
     this.readFile(file);
   }
 
@@ -99,6 +97,7 @@ export class CsvUploadComponent implements OnInit {
     this.patients = [];
     let totalScheduledHours = 0;
     let cumulativeScheduledHours = 0;
+    let sumTotalBillableHours = 0;
     for (var prop in result) {
       if (Object.prototype.hasOwnProperty.call(result, prop)) {
         if (prop == '' || prop == 'undefined') {
@@ -106,29 +105,40 @@ export class CsvUploadComponent implements OnInit {
 
         } else {
           let group = result[prop];
-          var visits = this.getVisits(group);
-          var caregiverNames = [...new Set(visits.map(x =>
-            x.caregiverName
-          ))]
-          caregiverNames.forEach(caregiverName => {
-            let caregiverVisits = visits.filter(x => x.caregiverName == caregiverName);
+          const caregiverNames = Array.from(new Set(this.allPatients.flatMap(patient => patient.visits.map(visit => visit.caregiverName))));
 
-            let caregiver = {
+          this.caregivers = caregiverNames.map(caregiverName => {
+            const caregiverVisits = this.allPatients.flatMap(patient => patient.visits.filter(visit => visit.caregiverName === caregiverName));
+            const totalHours = caregiverVisits.reduce((total, visit) => {
+              if (visit.actualVisitStart && visit.actualVisitEnd) {
+                const hoursDiff = this.getActualVisitTimeDifferenceInHours(
+                  visit.actualVisitStart,
+                  visit.actualVisitEnd,
+                  visit.visitScheduledStart,
+                  visit.visitScheduledEnd
+                );
+                return total + hoursDiff;
+              }
+              return total;
+            }, 0);
+
+            return {
               name: caregiverName,
-              visit: caregiverVisits,
-              totalHours:
-            } as Caregiver
+              visits: caregiverVisits,
+              totalHours: totalHours
+            } as Caregiver;
           });
 
           let patient: Patient = {
             id: prop,
             patientName: '',
             cargivers: [],
-            visits: visits,
+            visits: this.getVisits(group),
             scheduledHours: 0,
             billableHours: 0,
             totalScheduledHours: 0,
             cumulativeScheduledHours: 0,
+            sumTotalBillableHours: 0,
           }
           patient.patientName = patient.visits[0]?.patientName;
           patient.scheduledHours = patient.visits.map(x => x.visitScheduledHourDiffrence).reduce((partialSum, a) => partialSum + a, 0);
@@ -145,24 +155,26 @@ export class CsvUploadComponent implements OnInit {
           cumulativeScheduledHours = patient.cumulativeScheduledHours;
 
 
-          patient.cargivers;
 
+          patient.sumTotalBillableHours += patient.billableHours + sumTotalBillableHours
+          sumTotalBillableHours = patient.sumTotalBillableHours;
 
           this.patients.push(patient);
 
 
-          group.forEach((visit: Row) => {
-            const caregiverName = visit.caregiverName;
-            const visitObject = patient.visits.find(v => v.id === visit.id);
-            if (visitObject && caregiverName) {
-              const actualVisitHourDiff = visitObject.actualVisitHourDiffrence;
-              if (this.caregiverTotalHoursMap.has(caregiverName)) {
-                this.caregiverTotalHoursMap.set(caregiverName, this.caregiverTotalHoursMap.get(caregiverName)! + actualVisitHourDiff);
-              } else {
-                this.caregiverTotalHoursMap.set(caregiverName, actualVisitHourDiff);
-              }
-            }
-          });
+
+          // group.forEach((visit: Row) => {
+          //   const caregiverName = visit.caregiverName;
+          //   const visitObject = patient.visits.find(v => v.id === visit.id);
+          //   if (visitObject && caregiverName) {
+          //     const actualVisitHourDiff = visitObject.actualVisitHourDiffrence;
+          //     if (this.caregiverTotalHoursMap.has(caregiverName)) {
+          //       this.caregiverTotalHoursMap.set(caregiverName, this.caregiverTotalHoursMap.get(caregiverName)! + actualVisitHourDiff);
+          //     } else {
+          //       this.caregiverTotalHoursMap.set(caregiverName, actualVisitHourDiff);
+          //     }
+          //   }
+          // });
         }
       }
     }
@@ -194,15 +206,11 @@ export class CsvUploadComponent implements OnInit {
 
       let caregiverName = x.caregiverName;
 
-      // Check if the caregiver order number exists, if not, initialize it to 1
       if (!caregiverOrderNumbers.has(caregiverName)) {
         caregiverOrderNumbers.set(caregiverName, 1);
       }
 
-      // Get the current order number for this caregiver
       let caregiverOrderNumber = caregiverOrderNumbers.get(caregiverName) || 1;
-
-      // Update the order number for the next visit by incrementing it
       caregiverOrderNumbers.set(caregiverName, caregiverOrderNumber + 1);
 
 
@@ -228,7 +236,6 @@ export class CsvUploadComponent implements OnInit {
           earlyIn: 0,
           earlyOut: 0,
           lateIn: 0,
-          // lateIn: 0,
           lateOut: 0,
           missedIn: false,
           missedOut: false,
@@ -259,14 +266,15 @@ export class CsvUploadComponent implements OnInit {
       visitScheduledEnd: visit.visitScheduledEnd?.toLocaleTimeString() ?? '',
       actualVisit: visit.actualVisitStart?.toLocaleTimeString() ?? '',
       actualVisitEnd: visit.actualVisitEnd?.toLocaleTimeString() ?? '',
-      totalHours: `${visit.actualVisitHourDiffrence}/${visit.visitScheduledHourDiffrence}`,
+      Work_Hours: visit.actualVisitHourDiffrence,
+      totalHours: visit.visitScheduledHourDiffrence,
       NoteForTotalHours: visit.actualVisitHourDiffrence !== visit.visitScheduledHourDiffrence ? 'Not Matching' : '',
       totalBillableHours: `${patient.billableHours}/${patient.scheduledHours}`,
-      cumulativeBillableHours: patient.cumulativeScheduledHours,
-      totalCumulativeHours: patient.totalScheduledHours,
+      // cumulativeBillableHours: patient.cumulativeScheduledHours,
+      // totalCumulativeHours: patient.totalScheduledHours,
       billed: visit.billed ? 'yes' : 'no',
       notes: visit.notes.join(', '),
-      attendance: (visit.validation.missedIn ? 'Missed In' : '') + (visit.validation.missedOut ? (visit.validation.missedIn ? ' / Missed Out' : 'Missed Out') : ''),
+      attendance: (visit.validation.missedIn ? 'Missed In' : '') + (visit.validation.missedOut ? (visit.validation.missedIn ? 'Missed Out' : 'Missed Out') : ''),
 
     })));
 
@@ -301,6 +309,49 @@ export class CsvUploadComponent implements OnInit {
 
       window.URL.revokeObjectURL(url);
     });
+  }
+  clearFile() {
+    this.importedFileName = '';
+    this.allPatients = [];
+    this.patients = [];
+    this.caregivers = [];
+
+    const fileInput: HTMLInputElement | null = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  // calculateCaregiverHours(visits: Visit[]) {
+  //   const caregiverNames = Array.from(new Set(visits.map(x => x.caregiverName)));
+
+  //   this.caregivers = caregiverNames.map(caregiverName => {
+  //     const caregiverVisits = visits.filter(x => x.caregiverName === caregiverName);
+  //     const totalHours = caregiverVisits.reduce((total, visit) => {
+  //       if (visit.actualVisitStart && visit.actualVisitEnd) {
+  //         const hoursDiff = this.getActualVisitTimeDifferenceInHours(
+  //           visit.actualVisitStart,
+  //           visit.actualVisitEnd,
+  //           visit.visitScheduledStart,
+  //           visit.visitScheduledEnd
+  //         );
+  //         return total + hoursDiff;
+  //       }
+  //       return total;
+  //     }, 0);
+
+  //     return {
+  //       name: caregiverName,
+  //       visits: caregiverVisits,
+  //       totalHours: totalHours
+  //     } as Caregiver;
+  //   });
+  // }
+
+
+
+  get totalTotalBillableHours(): number {
+    return this.patients.reduce((total, patient) => total + patient.billableHours, 0);
   }
 
 
@@ -339,27 +390,71 @@ export class CsvUploadComponent implements OnInit {
   }
 
 
-  // !
-  getActualVisitTimeDifferenceInHours(actualStart: Date | undefined, actualEnd: Date | undefined, scheduledStart: Date | undefined, scheduledEnd: Date | undefined): number {
+  // ! under development
+  getActualVisitTimeDifferenceInHours(
+    actualStart: Date | undefined,
+    actualEnd: Date | undefined,
+    scheduledStart: Date | undefined,
+    scheduledEnd: Date | undefined): number {
     if (!actualStart || !scheduledStart) {
       return 0;
     }
 
     let quarters = 0;
     let startDifInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+    let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+    let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+    let lateoutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
+    let scheduledHours = ((scheduledEnd as any) - (scheduledStart as any)) / 60000;
+    let workedHours = ((actualEnd as any) - (actualStart as any)) / 60000;
+    let differenceHours = scheduledHours - workedHours;
 
-    if (startDifInMinutes >= 5) {
-      quarters = Math.ceil(startDifInMinutes / 15);
+
+
+    if ((lateInInMinutes > 7) && (lateoutInMinutes < 7)) {
+      quarters = Math.ceil(lateInInMinutes / 15);
       scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
     }
 
-    if (actualEnd && scheduledEnd && actualEnd < scheduledEnd) {
-      let endDifInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
-
-      if (endDifInMinutes > 5) {
-        quarters = Math.ceil(endDifInMinutes / 15);
-        scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
+    if ((actualStart > scheduledStart) && (scheduledEnd == actualEnd)) {
+      let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+      if (lateInInMinutes > 7) {
+        quarters = Math.ceil(lateInInMinutes / 15);
+        scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
       }
+    }
+
+    if ((actualStart > scheduledStart) && (actualEnd! > scheduledEnd!)) {
+      let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+      let lateoutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
+      let lateOutLateInDifInMin = (lateoutInMinutes - lateInInMinutes);
+      if ((lateOutLateInDifInMin - scheduledHours) > 7) {
+        quarters = Math.ceil(lateOutLateInDifInMin / 15);
+        scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+      }
+    }
+
+    if ((actualStart > scheduledStart) && (scheduledEnd! > actualEnd!)) {
+      let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+      let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+      let lateInEarlyOut = lateInInMinutes + earlyOutInMinutes;
+      if (lateInEarlyOut > 7) {
+        quarters = Math.ceil(lateInEarlyOut / 15);
+        scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
+      }
+    }
+
+    if ((scheduledStart > actualStart) && (scheduledEnd! > actualEnd!)) {
+      let differenceHours = scheduledHours - workedHours;
+      if (differenceHours > 7) {
+        quarters = Math.ceil(differenceHours / 15);
+        scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
+      }
+    }
+
+    if (earlyOutInMinutes > 7) {
+      quarters = Math.ceil(earlyOutInMinutes / 15);
+      scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
     }
 
     if (scheduledEnd && scheduledEnd > scheduledStart) {
@@ -369,6 +464,43 @@ export class CsvUploadComponent implements OnInit {
 
     return 0;
   }
+
+  // ! offical method
+  // getActualVisitTimeDifferenceInHours(
+  //   actualStart: Date | undefined,
+  //   actualEnd: Date | undefined,
+  //   scheduledStart: Date | undefined,
+  //   scheduledEnd: Date | undefined): number {
+  //   if (!actualStart || !scheduledStart) {
+  //     return 0;
+  //   }
+
+  //   let quarters = 0;
+  //   let startDifInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+
+  //   if (startDifInMinutes > 7) {
+  //     quarters = Math.ceil(startDifInMinutes / 15);
+  //     scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+  //   }
+
+  //   if (actualEnd && scheduledEnd && actualEnd < scheduledEnd) {
+  //     let endDifInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+
+  //   if (endDifInMinutes > 7) {
+  //     quarters = Math.ceil(endDifInMinutes / 15);
+  //     scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
+  //   }
+  // }
+
+  //   if (scheduledEnd && scheduledEnd > scheduledStart) {
+  //     let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
+  //     return value;
+  //   }
+
+  //   return 0;
+  // }
+
+
 
   getTimeDiffrenceInMinutes(start: Date | undefined, end?: Date): number {
     if (start && end) {
@@ -386,28 +518,26 @@ export class CsvUploadComponent implements OnInit {
       earlyIn: 0,
       earlyOut: 0,
       lateIn: 0,
-      // lateIn: 0,
       lateOut: 0,
       missedIn: false,
       missedOut: false,
       color: '',
     };
-
     if (visit.billed) {
       notes.push('Already billed');
-      validation.color = 'green';
+      validation.color = 'mediumaquamarine';
     }
 
     if (!visit.actualVisitStart) {
       validation.missedIn = true;
       notes.push('Missed in');
-      validation.color = 'red';
+      validation.color = 'mistyrose';
     }
 
     if (!visit.actualVisitEnd) {
       validation.missedOut = true;
       notes.push('Missed out');
-      validation.color = 'red';
+      validation.color = 'mistyrose';
     }
 
     if (visit.actualVisitStart && visit.actualVisitEnd) {
@@ -423,7 +553,7 @@ export class CsvUploadComponent implements OnInit {
         } else {
           notes.push('Early in by ' + startTimeDiff + ' minute' + (startTimeDiff > 1 ? 's' : ''));
         }
-        validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
+        validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow';
 
       }
 
@@ -433,16 +563,15 @@ export class CsvUploadComponent implements OnInit {
           const hours = Math.floor(Math.abs(startTimeDiff) / 60);
           const minutes = Math.abs(startTimeDiff) % 60;
           notes.push(`Late in by ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`);
-          // validation.color = 'gold';
         } else {
           notes.push('Late in by ' + Math.abs(startTimeDiff) + ' minute' + (Math.abs(startTimeDiff) > 1 ? 's' : ''));
         }
 
 
-        if (Math.abs(startTimeDiff) >= 7) {
-          validation.color = 'gold';
+        if (Math.abs(startTimeDiff) > 7) {
+          validation.color = 'mistyrose';
         } else {
-          validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
+          validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow';
         }
       }
 
@@ -452,14 +581,13 @@ export class CsvUploadComponent implements OnInit {
           const hours = Math.floor(endTimeDiff / 60);
           const minutes = endTimeDiff % 60;
           notes.push(`Early out by ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`);
-          // validation.color = 'gold';
         } else {
           notes.push('Early out by ' + endTimeDiff + ' minute' + (endTimeDiff > 1 ? 's' : ''));
         }
-        if (Math.abs(endTimeDiff) >= 7) {
-          validation.color = 'gold';
+        if (Math.abs(endTimeDiff) > 7) {
+          validation.color = 'mistyrose';
         } else {
-          validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen';
+          validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow';
         }
       }
 
@@ -472,24 +600,22 @@ export class CsvUploadComponent implements OnInit {
         } else {
           notes.push('Late out by ' + Math.abs(endTimeDiff) + ' minute' + (Math.abs(endTimeDiff) > 1 ? 's' : ''));
         }
-        // validation.color = 'lightgreen';
-        validation.color = validation.color === 'gold' ? 'gold' : 'lightgreen'; // this i think fix the bugs 
+        validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow'; // this i think fix the bugs 
       }
     }
 
-    // Check conditions for setting validation color to gold
-    if (validation.lateIn >= 7 && validation.earlyIn > 0 && validation.lateOut > 0) {
-      validation.color = 'gold';
+    if (validation.lateIn > 7 && validation.earlyIn > 0 && validation.lateOut > 0) {
+      validation.color = 'mistyrose';
     }
-    if (validation.earlyOut >= 7 && validation.lateOut > 0 && validation.earlyIn > 0) {
-      validation.color = 'gold';
+    if (validation.earlyOut > 7 && validation.lateOut > 0 && validation.earlyIn > 0) {
+      validation.color = 'mistyrose';
     }
 
-    if (validation.lateIn >= 7 && validation.earlyOut >= 7 || validation.earlyOut >= 7 && validation.lateIn >= 7) {
-      validation.color = 'gold';
+    if (validation.lateIn > 7 && validation.earlyOut > 7 || validation.earlyOut > 7 && validation.lateIn > 7) {
+      validation.color = 'mistyrose';
     }
     // if (validation.earlyOut >= 7 && validation.lateIn >= 7) {
-    //   validation.color = 'gold';
+    //   validation.color = 'mistyrose';
     // }
 
 
@@ -522,6 +648,7 @@ export interface Patient {
   billableHours: number;
   totalScheduledHours: number;
   cumulativeScheduledHours: number;
+  sumTotalBillableHours: number;
   visits: Visit[];
   cargivers: Caregiver[];
 
@@ -547,12 +674,8 @@ export interface Visit {
   notes: string[];
   billed: boolean;
   validation: Validation;
-  // !
   orderNumber: number;
 }
-
-// add new interface for caregiver
-// name  visit[] ,total hours
 
 export interface Caregiver {
   visits: Visit[];
@@ -562,7 +685,6 @@ export interface Caregiver {
 
 export interface Validation {
   lateIn: number;
-  // lateIn: number
   lateOut: number;
   earlyIn: number;
   earlyOut: number;

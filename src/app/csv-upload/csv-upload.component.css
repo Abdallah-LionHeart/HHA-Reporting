@@ -16,6 +16,10 @@ span {
   color: black;
 }
 
+table:not(:first-child) {
+  margin-top: 60px;
+}
+
 table {
   margin-top: 20px;
 }
@@ -28,18 +32,23 @@ table th {
 }
 
 .row-1 {
-  background-color: black;
-  color: white;
+  background-color: #AED6E1;
+  color: black;
 }
 
 .row-2 {
   font-weight: bold;
-  background-color: blanchedalmond;
+  background-color: #D6EAF8;
 }
 
 .row-3 {
-  background-color: rgb(60, 0, 0);
-  color: white;
+  background-color: #AED6E1;
+  color: black;
+}
+
+.row-5 {
+  background-color: wheat;
+  color: black;
 }
 
 .row-1,
@@ -47,8 +56,6 @@ table th {
   font-weight: bold;
 }
 
-/* calculator */
-
-.cal-color {
-  color: aliceblue;
+.nav-item {
+  margin-left: 10px;
 }
