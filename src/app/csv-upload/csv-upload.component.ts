@@ -542,7 +542,7 @@ export class CsvUploadComponent implements OnInit {
         }
 
 
-        if (Math.abs(startTimeDiff) > 7 && !(Math.abs(endTimeDiff))) {
+        if (Math.abs(startTimeDiff) > 7 && !(Math.abs(endTimeDiff)) || Math.abs(startTimeDiff - endTimeDiff) > 7) {
           validation.color = 'mistyrose';
         } else {
           validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow';
