@@ -10,7 +10,7 @@ import { FileNameInputDialogComponent } from './file-name-input-dialog/file-name
   styleUrls: ['./csv-upload.component.css']
 })
 export class CsvUploadComponent implements OnInit {
-
+  caregiverTotalHoursMap: Map<string, number> = new Map<string, number>();
   caregiverIndex: string = ''
   importedFileName: string = '';
   allPatients: Patient[] = [];
@@ -92,7 +92,7 @@ export class CsvUploadComponent implements OnInit {
       return r;
     }, Object.create(null));
 
-    // const caregiverTotalHoursMap: Map<string, number> = new Map<string, number>();
+    const caregiverTotalHoursMap: Map<string, number> = new Map<string, number>();
 
     this.patients = [];
     let totalScheduledHours = 0;
@@ -163,18 +163,18 @@ export class CsvUploadComponent implements OnInit {
 
 
 
-          // group.forEach((visit: Row) => {
-          //   const caregiverName = visit.caregiverName;
-          //   const visitObject = patient.visits.find(v => v.id === visit.id);
-          //   if (visitObject && caregiverName) {
-          //     const actualVisitHourDiff = visitObject.actualVisitHourDiffrence;
-          //     if (this.caregiverTotalHoursMap.has(caregiverName)) {
-          //       this.caregiverTotalHoursMap.set(caregiverName, this.caregiverTotalHoursMap.get(caregiverName)! + actualVisitHourDiff);
-          //     } else {
-          //       this.caregiverTotalHoursMap.set(caregiverName, actualVisitHourDiff);
-          //     }
-          //   }
-          // });
+          group.forEach((visit: Row) => {
+            const caregiverName = visit.caregiverName;
+            const visitObject = patient.visits.find(v => v.id === visit.id);
+            if (visitObject && caregiverName) {
+              const actualVisitHourDiff = visitObject.actualVisitHourDiffrence;
+              if (this.caregiverTotalHoursMap.has(caregiverName)) {
+                this.caregiverTotalHoursMap.set(caregiverName, this.caregiverTotalHoursMap.get(caregiverName)! + actualVisitHourDiff);
+              } else {
+                this.caregiverTotalHoursMap.set(caregiverName, actualVisitHourDiff);
+              }
+            }
+          });
         }
       }
     }
@@ -270,8 +270,8 @@ export class CsvUploadComponent implements OnInit {
       totalHours: visit.visitScheduledHourDiffrence,
       NoteForTotalHours: visit.actualVisitHourDiffrence !== visit.visitScheduledHourDiffrence ? 'Not Matching' : '',
       totalBillableHours: `${patient.billableHours}/${patient.scheduledHours}`,
-      // cumulativeBillableHours: patient.cumulativeScheduledHours,
-      // totalCumulativeHours: patient.totalScheduledHours,
+      caregiver: visit.caregiverName,
+      // !add caregiver total hours
       billed: visit.billed ? 'yes' : 'no',
       notes: visit.notes.join(', '),
       attendance: (visit.validation.missedIn ? 'Missed In' : '') + (visit.validation.missedOut ? (visit.validation.missedIn ? 'Missed Out' : 'Missed Out') : ''),
@@ -390,8 +390,57 @@ export class CsvUploadComponent implements OnInit {
   }
 
 
-  // ! under development
   getActualVisitTimeDifferenceInHours(
+    actualStart: Date | undefined,
+    actualEnd: Date | undefined,
+    scheduledStart: Date | undefined,
+    scheduledEnd: Date | undefined
+  ): number {
+    if (!actualStart || !scheduledStart) {
+      return 0;
+    }
+
+    let quarters = 0;
+    // let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+    // let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+
+    if (actualStart > scheduledStart) {
+      if (scheduledEnd && actualEnd && actualEnd > scheduledEnd) {
+        let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+        let lateOutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
+        let lateInLateOutDifInMin = Math.abs(lateOutInMinutes - lateInInMinutes);
+        if (lateInLateOutDifInMin > 7) {
+          quarters = Math.ceil(lateInLateOutDifInMin / 15);
+          scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+        }
+      } else if (scheduledEnd && actualEnd && scheduledEnd > actualEnd) {
+        let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+        let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+        let lateInEarlyOut = Math.abs(lateInInMinutes + earlyOutInMinutes);
+        console.log("lateInEarlyOut:", lateInEarlyOut);
+        if (lateInEarlyOut > 7) {
+          quarters = Math.ceil(lateInEarlyOut / 15);
+          scheduledStart = new Date(scheduledStart.getTime() - quarters * 15 * 60000);
+
+        }
+      }
+    }
+
+    if (scheduledEnd && scheduledEnd > scheduledStart) {
+      let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
+      return value;
+    }
+
+    return 0;
+  }
+
+
+
+
+
+
+  // ! under development offical method 20/sep/2023
+  getActualVisitTimeDifferenceInHourssa(
     actualStart: Date | undefined,
     actualEnd: Date | undefined,
     scheduledStart: Date | undefined,
@@ -404,58 +453,62 @@ export class CsvUploadComponent implements OnInit {
     let startDifInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
     let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
     let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
-    let lateoutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
+    let lateOutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
+    // let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+    // let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+    let lateInEarlyOut = Math.abs(lateInInMinutes + earlyOutInMinutes);
     let scheduledHours = ((scheduledEnd as any) - (scheduledStart as any)) / 60000;
     let workedHours = ((actualEnd as any) - (actualStart as any)) / 60000;
     let differenceHours = scheduledHours - workedHours;
 
 
+    // late in
+    // if ((lateInInMinutes > 7) && !(actualEnd > scheduledEnd) && !(actualEnd < scheduledEnd)) {
+    //   quarters = Math.ceil(lateInInMinutes / 15);
+    //   scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+    // }
 
-    if ((lateInInMinutes > 7) && (lateoutInMinutes < 7)) {
-      quarters = Math.ceil(lateInInMinutes / 15);
-      scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
-    }
+    // late in - on time
 
-    if ((actualStart > scheduledStart) && (scheduledEnd == actualEnd)) {
+    // if ((actualStart > scheduledStart) && ((scheduledEnd == actualEnd) || (lateOutInMinutes < 7) || earlyOutInMinutes < 7)) {
+    // if ((actualStart > scheduledStart) && (scheduledEnd == actualEnd)) {
+    //   // let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+    //   if (lateInInMinutes > 7) {
+    //     quarters = Math.ceil(lateInInMinutes / 15);
+    //     scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+    //   }
+    // }
+    // ! worked ..late in - late out 
+    if ((actualStart > scheduledStart) && (scheduledEnd && actualEnd && actualEnd > scheduledEnd)) {
       let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-      if (lateInInMinutes > 7) {
-        quarters = Math.ceil(lateInInMinutes / 15);
+      let lateOutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
+      let lateInLateOutDifInMin = Math.abs(lateOutInMinutes - lateInInMinutes);
+      if (lateInLateOutDifInMin > 7) {
+        quarters = Math.ceil(lateInLateOutDifInMin / 15);
         scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
       }
     }
-
-    if ((actualStart > scheduledStart) && (actualEnd! > scheduledEnd!)) {
-      let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-      let lateoutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
-      let lateOutLateInDifInMin = (lateoutInMinutes - lateInInMinutes);
-      if ((lateOutLateInDifInMin - scheduledHours) > 7) {
-        quarters = Math.ceil(lateOutLateInDifInMin / 15);
-        scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
-      }
-    }
-
-    if ((actualStart > scheduledStart) && (scheduledEnd! > actualEnd!)) {
-      let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-      let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
-      let lateInEarlyOut = lateInInMinutes + earlyOutInMinutes;
+    // late in - early out
+    if ((actualStart > scheduledStart) && (scheduledEnd && actualEnd && scheduledEnd > actualEnd)) {
+      let lateInEarlyOut = Math.abs(lateInInMinutes + earlyOutInMinutes);
       if (lateInEarlyOut > 7) {
         quarters = Math.ceil(lateInEarlyOut / 15);
-        scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
+        scheduledStart = new Date(scheduledStart.getTime() - quarters * 15 * 60000);
       }
     }
 
-    if ((scheduledStart > actualStart) && (scheduledEnd! > actualEnd!)) {
-      let differenceHours = scheduledHours - workedHours;
-      if (differenceHours > 7) {
-        quarters = Math.ceil(differenceHours / 15);
-        scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
-      }
-    }
+    // if ((scheduledStart > actualStart) && (scheduledEnd! > actualEnd!)) {
+    //   let differenceHours = scheduledHours - workedHours;
+    //   if (differenceHours > 7) {
+    //     quarters = Math.ceil(differenceHours / 15);
+    //     scheduledStart = new Date(scheduledStart!.getTime() - quarters * 15 * 60000);
+    //   }
+    // }
 
-    if (earlyOutInMinutes > 7) {
-      quarters = Math.ceil(earlyOutInMinutes / 15);
-      scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
-    }
+    // if (earlyOutInMinutes > 7) {
+    //   quarters = Math.ceil(earlyOutInMinutes / 15);
+    //   scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
+    // }
 
     if (scheduledEnd && scheduledEnd > scheduledStart) {
       let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
