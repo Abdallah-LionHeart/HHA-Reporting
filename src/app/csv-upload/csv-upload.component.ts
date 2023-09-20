@@ -394,56 +394,6 @@ export class CsvUploadComponent implements OnInit {
     actualStart: Date | undefined,
     actualEnd: Date | undefined,
     scheduledStart: Date | undefined,
-    scheduledEnd: Date | undefined
-  ): number {
-    if (!actualStart || !scheduledStart) {
-      return 0;
-    }
-
-    let quarters = 0;
-    // let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-    // let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
-
-    if (actualStart > scheduledStart) {
-      if (scheduledEnd && actualEnd && actualEnd > scheduledEnd) {
-        let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-        let lateOutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
-        let lateInLateOutDifInMin = Math.abs(lateOutInMinutes - lateInInMinutes);
-        if (lateInLateOutDifInMin > 7) {
-          quarters = Math.ceil(lateInLateOutDifInMin / 15);
-          scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
-        }
-      } else if (scheduledEnd && actualEnd && scheduledEnd > actualEnd) {
-        let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-        let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
-        let lateInEarlyOut = Math.abs(lateInInMinutes + earlyOutInMinutes);
-        console.log("lateInEarlyOut:", lateInEarlyOut);
-        if (lateInEarlyOut > 7) {
-          quarters = Math.ceil(lateInEarlyOut / 15);
-          scheduledStart = new Date(scheduledStart.getTime() - quarters * 15 * 60000);
-
-        }
-      }
-    }
-
-    if (scheduledEnd && scheduledEnd > scheduledStart) {
-      let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
-      return value;
-    }
-
-    return 0;
-  }
-
-
-
-
-
-
-  // ! under development offical method 20/sep/2023
-  getActualVisitTimeDifferenceInHourssa(
-    actualStart: Date | undefined,
-    actualEnd: Date | undefined,
-    scheduledStart: Date | undefined,
     scheduledEnd: Date | undefined): number {
     if (!actualStart || !scheduledStart) {
       return 0;
@@ -459,26 +409,27 @@ export class CsvUploadComponent implements OnInit {
     let lateInEarlyOut = Math.abs(lateInInMinutes + earlyOutInMinutes);
     let scheduledHours = ((scheduledEnd as any) - (scheduledStart as any)) / 60000;
     let workedHours = ((actualEnd as any) - (actualStart as any)) / 60000;
-    let differenceHours = scheduledHours - workedHours;
+    let differenceHours = Math.abs(scheduledHours - workedHours);
 
 
-    // late in
-    // if ((lateInInMinutes > 7) && !(actualEnd > scheduledEnd) && !(actualEnd < scheduledEnd)) {
-    //   quarters = Math.ceil(lateInInMinutes / 15);
-    //   scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
-    // }
+    //! late in
+    if ((lateInInMinutes > 7) && !(scheduledEnd && actualEnd && actualEnd > scheduledEnd) && !(scheduledEnd && actualEnd && actualEnd < scheduledEnd)) {
+      let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+      quarters = Math.ceil(lateInInMinutes / 15);
+      scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+    }
 
-    // late in - on time
-
-    // if ((actualStart > scheduledStart) && ((scheduledEnd == actualEnd) || (lateOutInMinutes < 7) || earlyOutInMinutes < 7)) {
-    // if ((actualStart > scheduledStart) && (scheduledEnd == actualEnd)) {
-    //   // let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-    //   if (lateInInMinutes > 7) {
-    //     quarters = Math.ceil(lateInInMinutes / 15);
-    //     scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
-    //   }
-    // }
-    // ! worked ..late in - late out 
+    //! late in - on time
+    if ((actualStart > scheduledStart) && ((scheduledEnd == actualEnd) || (lateOutInMinutes < 7) || earlyOutInMinutes < 7)) {
+      if ((actualStart > scheduledStart) && (scheduledEnd == actualEnd)) {
+        let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
+        if (lateInInMinutes > 7) {
+          quarters = Math.ceil(lateInInMinutes / 15);
+          scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
+        }
+      }
+    }
+    // ! worked.. late in - late out 
     if ((actualStart > scheduledStart) && (scheduledEnd && actualEnd && actualEnd > scheduledEnd)) {
       let lateInInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
       let lateOutInMinutes = ((actualEnd as any) - (scheduledEnd as any)) / 60000;
@@ -488,27 +439,26 @@ export class CsvUploadComponent implements OnInit {
         scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
       }
     }
-    // late in - early out
+    //! worked.. late in - early out
     if ((actualStart > scheduledStart) && (scheduledEnd && actualEnd && scheduledEnd > actualEnd)) {
-      let lateInEarlyOut = Math.abs(lateInInMinutes + earlyOutInMinutes);
-      if (lateInEarlyOut > 7) {
-        quarters = Math.ceil(lateInEarlyOut / 15);
-        scheduledStart = new Date(scheduledStart.getTime() - quarters * 15 * 60000);
+      let scheduledHours = ((scheduledEnd as any) - (scheduledStart as any)) / 60000;
+      let workedHours = ((actualEnd as any) - (actualStart as any)) / 60000;
+      let differenceHours = Math.abs(scheduledHours - workedHours);
+      if (differenceHours > 7) {
+        quarters = Math.ceil(differenceHours / 15);
+        scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
       }
     }
-
-    // if ((scheduledStart > actualStart) && (scheduledEnd! > actualEnd!)) {
-    //   let differenceHours = scheduledHours - workedHours;
-    //   if (differenceHours > 7) {
-    //     quarters = Math.ceil(differenceHours / 15);
-    //     scheduledStart = new Date(scheduledStart!.getTime() - quarters * 15 * 60000);
-    //   }
-    // }
-
-    // if (earlyOutInMinutes > 7) {
-    //   quarters = Math.ceil(earlyOutInMinutes / 15);
-    //   scheduledEnd = new Date(scheduledEnd!.getTime() - quarters * 15 * 60000);
-    // }
+    //  ! EarlyIn - EarlyOut
+    if ((scheduledStart > actualStart) && (scheduledEnd && actualEnd && scheduledEnd > actualEnd)) {
+      let scheduledHours = ((scheduledEnd as any) - (scheduledStart as any)) / 60000;
+      let workedHours = ((actualEnd as any) - (actualStart as any)) / 60000;
+      let differenceHours = Math.abs(scheduledHours - workedHours);
+      if (differenceHours > 7) {
+        quarters = Math.ceil(differenceHours / 15);
+        scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
+      }
+    }
 
     if (scheduledEnd && scheduledEnd > scheduledStart) {
       let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
@@ -517,43 +467,6 @@ export class CsvUploadComponent implements OnInit {
 
     return 0;
   }
-
-  // ! offical method
-  // getActualVisitTimeDifferenceInHours(
-  //   actualStart: Date | undefined,
-  //   actualEnd: Date | undefined,
-  //   scheduledStart: Date | undefined,
-  //   scheduledEnd: Date | undefined): number {
-  //   if (!actualStart || !scheduledStart) {
-  //     return 0;
-  //   }
-
-  //   let quarters = 0;
-  //   let startDifInMinutes = ((actualStart as any) - (scheduledStart as any)) / 60000;
-
-  //   if (startDifInMinutes > 7) {
-  //     quarters = Math.ceil(startDifInMinutes / 15);
-  //     scheduledStart = new Date(scheduledStart.getTime() + quarters * 15 * 60000);
-  //   }
-
-  //   if (actualEnd && scheduledEnd && actualEnd < scheduledEnd) {
-  //     let endDifInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
-
-  //   if (endDifInMinutes > 7) {
-  //     quarters = Math.ceil(endDifInMinutes / 15);
-  //     scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
-  //   }
-  // }
-
-  //   if (scheduledEnd && scheduledEnd > scheduledStart) {
-  //     let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
-  //     return value;
-  //   }
-
-  //   return 0;
-  // }
-
-
 
   getTimeDiffrenceInMinutes(start: Date | undefined, end?: Date): number {
     if (start && end) {
