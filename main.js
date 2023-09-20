@@ -6,7 +6,7 @@ function onReady() {
   win = new BrowserWindow({ width: 900, height: 6700 });
   win.loadURL(
     url.format({
-      pathname: path.join(__dirname, "dist/billing-assistant/index.html"),
+      pathname: path.join(__dirname, "dist/hhh-reporting/index.html"),
       protocol: "file:",
       slashes: true,
     })
