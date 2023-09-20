@@ -459,7 +459,13 @@ export class CsvUploadComponent implements OnInit {
         scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
       }
     }
-
+    if (scheduledEnd && actualEnd && scheduledEnd > actualEnd) {
+      let earlyOutInMinutes = ((scheduledEnd as any) - (actualEnd as any)) / 60000;
+      if (earlyOutInMinutes > 7) {
+        quarters = Math.ceil(earlyOutInMinutes / 15);
+        scheduledEnd = new Date(scheduledEnd.getTime() - quarters * 15 * 60000);
+      }
+    }
     if (scheduledEnd && scheduledEnd > scheduledStart) {
       let value = ((scheduledEnd as any) - (scheduledStart as any)) / 3600000;
       return value;
@@ -509,8 +515,10 @@ export class CsvUploadComponent implements OnInit {
     if (visit.actualVisitStart && visit.actualVisitEnd) {
       let startTimeDiff = this.getTimeDiffrenceInMinutes(new Date(visit.visitScheduledStart as Date), new Date(visit.actualVisitStart as Date));
       let endTimeDiff = this.getTimeDiffrenceInMinutes(new Date(visit.visitScheduledEnd as Date), new Date(visit.actualVisitEnd as Date));
+      let lateInEarlyOut = Math.abs(startTimeDiff + endTimeDiff);
+      let lateInLateOut = Math.abs(startTimeDiff - endTimeDiff);
 
-      if (startTimeDiff > 0) {
+      if (startTimeDiff > 0 && !(Math.abs(endTimeDiff))) {
         validation.earlyIn = startTimeDiff;
         if (Math.abs(startTimeDiff) >= 60) {
           const hours = Math.floor(startTimeDiff / 60);
@@ -534,7 +542,7 @@ export class CsvUploadComponent implements OnInit {
         }
 
 
-        if (Math.abs(startTimeDiff) > 7) {
+        if (Math.abs(startTimeDiff) > 7 && !(Math.abs(endTimeDiff))) {
           validation.color = 'mistyrose';
         } else {
           validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow';
@@ -556,6 +564,16 @@ export class CsvUploadComponent implements OnInit {
           validation.color = validation.color === 'mistyrose' ? 'mistyrose' : 'lightgoldenrodyellow';
         }
       }
+
+      // lateIn - earlyOut
+      // if (lateInEarlyOut > 7) {
+      //   validation.color = 'red';
+      // }
+
+      // if (lateInLateOut > 7) {
+      //   validation.color = 'yellow';
+      // }
+
 
       else if (endTimeDiff < 0) {
         validation.lateOut = endTimeDiff;
