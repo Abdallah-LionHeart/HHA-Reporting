@@ -2,18 +2,17 @@
     <div class="container">
         <a class="navbar-brand" href="#">HHA Reporting</a>
         <div class="collapse navbar-collapse">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item ms-5" style="color: aliceblue;" *ngIf="allPatients.length > 0">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item me-2" style="color: aliceblue;" *ngIf="allPatients.length > 0">
                     <b style="font-size: medium;">Current File :</b> {{importedFileName}}
                 </li>
             </ul>
             <form class="d-flex">
-                <button class="btn btn-outline-danger me-4" (click)="clearFile()" *ngIf="allPatients.length > 0">Clear</button>
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                <input class="form-control ms-2" type="search" placeholder="Search" aria-label="Search"
                     [(ngModel)]="searchQuery" (ngModelChange)="changed()" onkeydown="return (event.keyCode!=13);"
                     name="something" [ngModelOptions]="{standalone: true}" [disabled]="allPatients.length == 0">
+                <button class="btn btn-outline-danger ms-2" (click)="clearFile()" *ngIf="allPatients.length > 0">Clear</button>
                 <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success ms-2 d-flex">IMPORT</label>
-
                 <button class="btn btn-outline-success ms-2" (click)="exportVisitsToExcel()" *ngIf="allPatients.length > 0">EXPORT</button>
                 <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
             </form>
@@ -32,22 +31,28 @@
 
         <div class="col-md-6 ">
             <div class="d-flex justify-content-center">
+                <button class="btn btn-outline-danger me-2" (click)="clearFile()" *ngIf="allPatients.length > 0">Clear</button>
+
                 <label for="VisitLog" id="VisitLog_label" class="btn btn-outline-success">IMPORT</label>
 
-                <button class="btn btn-outline-success ms-2" [disabled]="allPatients.length == 0" (click)="exportVisitsToExcel()">Export</button>
+                <button class="btn btn-outline-success ms-2" [disabled]="allPatients.length == 0" (click)="exportVisitsToExcel()" *ngIf="allPatients.length > 0">Export</button>
 
                 <button class="btn btn-outline-success ms-2" routerLink="/calculator">Calculator</button>
             </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p class="ms-2 p-2" style="color: rgb(7, 7, 7);" *ngIf="allPatients.length > 0">
+                    <b style="font-size: medium;">Current File :</b> {{importedFileName}}
+                </p>
+            </div>
+            <!-- </div> -->
         </div>
     </form>
 
     <input id="VisitLog" type="file" style="visibility: hidden;" (change)="onFileSelected($event)" accept=".csv">
 
     <div class="table-responsive">
-        <!-- <div *ngFor="let caregiver of caregiverTotalHoursMap.keys()">
-            <p>Caregiver Name: {{ caregiver }}</p>
-            <p>Total Hours: {{ caregiverTotalHoursMap.get(caregiver) }}</p>
-        </div> -->
 
         <table class="table table-striped-columns" id="table" *ngFor="let patient of patients; let index = index;">
             <tr class="row-1">
@@ -65,8 +70,6 @@
                 <td colspan="2">{{patient.billableHours}}/{{patient.scheduledHours}}</td>
                 <td>{{totalTotalBillableHours}}/{{patient.totalScheduledHours}}</td>
                 <td colspan="1">{{patient.sumTotalBillableHours}}/{{patient.cumulativeScheduledHours}}</td>
-                <!-- <td colspan="1">{{patient.cumulativeScheduledHours}}/{{patient.totalScheduledHours}}</td> -->
-                <!-- <td>{{patient.sumTotalBillableHours}}/{{patient.totalScheduledHours}}</td> -->
             </tr>
 
             <tr class="row-3">
@@ -85,7 +88,6 @@
             <tr *ngFor="let visit of patient.visits; let i = index" class="row-4"
                 [ngStyle]="{'background-color': visit.validation.color}"
                 [ngClass]="{'text-white': visit.validation.color == 'red' || visit.validation.color == 'green'}">
-                <!-- <td>{{i + 1}}</td> -->
                 <td>{{visit.orderNumber}}</td>
                 <td>{{visit.caregiverName}}</td>
                 <td>{{visit.assignmentId}}</td>
@@ -107,14 +109,14 @@
                 </td>
 
             </tr>
-            <!-- <tr class="row-5">
+            <tr class="row-5">
                 <th colspan="5">Caregiver Name</th>
                 <th colspan="5">Total Hours</th>
-            </tr> -->
-            <!-- <tr *ngFor="let caregiver of caregivers">
-                            <td colspan="5"> name :{{ caregiver.name }}</td>
-                            <td colspan="5"> TH :{{ caregiver.totalHours }}</td>
-                        </tr> -->
+            </tr>
+            <tr *ngFor="let caregiver of caregivers">
+                <td colspan="5"> name :{{ caregiver.name }}</td>
+                <td colspan="5"> TH :{{ caregiver.totalHours }}</td>
+            </tr>
         </table>
     </div>
 

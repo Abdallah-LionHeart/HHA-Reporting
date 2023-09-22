@@ -187,6 +187,7 @@ export class CsvUploadComponent implements OnInit {
     this.allPatients = this.patients;
 
     console.log(this.patients);
+    console.log(this.caregivers)
 
   }
 
@@ -212,7 +213,6 @@ export class CsvUploadComponent implements OnInit {
 
       let caregiverOrderNumber = caregiverOrderNumbers.get(caregiverName) || 1;
       caregiverOrderNumbers.set(caregiverName, caregiverOrderNumber + 1);
-
 
 
       let visit: Visit = {
@@ -272,6 +272,7 @@ export class CsvUploadComponent implements OnInit {
       totalBillableHours: `${patient.billableHours}/${patient.scheduledHours}`,
       caregiver: visit.caregiverName,
       // !add caregiver total hours
+      // caregiverTotalHours:caregiver.totalHours,
       billed: visit.billed ? 'yes' : 'no',
       notes: visit.notes.join(', '),
       attendance: (visit.validation.missedIn ? 'Missed In' : '') + (visit.validation.missedOut ? (visit.validation.missedIn ? 'Missed Out' : 'Missed Out') : ''),
